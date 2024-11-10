@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parking Space Occupancy</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f4f8;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        flex-direction: column;
+      }
+      .container {
+        text-align: center;
+        background-color: #ffffff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 400px;
+      }
+      .status {
+        font-size: 24px;
+        margin-top: 20px;
+      }
+      .status span {
+        font-weight: bold;
+      }
+      .status.occupied {
+        color: red;
+      }
+      .status.unoccupied {
+        color: green;
+      }
+      .title {
+        font-size: 30px;
+        margin-bottom: 20px;
+        color: #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="title">Parking Space Occupancy</div>
+      <div class="status" id="space1-status">Space 1: Awaiting Data...</div>
+      <div class="status" id="space2-status">Space 2: Awaiting Data...</div>
+    </div>
+
+    <script>
+      // Establish WebSocket connection to the server
+      const socket = new WebSocket("ws://localhost:8766");
+
+      // Update the status dynamically based on the WebSocket message
+      socket.onmessage = function (event) {
+        try {
+          const data = JSON.parse(event.data); // Assuming the server sends data in JSON format
+
+          // Ensure data format is correct
+          if (data.space1 !== undefined && data.space2 !== undefined) {
+            // Update Space 1 status
+            if (data.space1 === "1") {
+              document.getElementById("space1-status").innerHTML =
+                "Space 1: Occupied";
+              document
+                .getElementById("space1-status")
+                .classList.add("occupied");
+              document
+                .getElementById("space1-status")
+                .classList.remove("unoccupied");
+            } else {
+              document.getElementById("space1-status").innerHTML =
+                "Space 1: Unoccupied";
+              document
+                .getElementById("space1-status")
+                .classList.add("unoccupied");
+              document
+                .getElementById("space1-status")
+                .classList.remove("occupied");
+            }
+
+            // Update Space 2 status
+            if (data.space2 === "1") {
+              document.getElementById("space2-status").innerHTML =
+                "Space 2: Occupied";
+              document
+                .getElementById("space2-status")
+                .classList.add("occupied");
+              document
+                .getElementById("space2-status")
+                .classList.remove("unoccupied");
+            } else {
+              document.getElementById("space2-status").innerHTML =
+                "Space 2: Unoccupied";
+              document
+                .getElementById("space2-status")
+                .classList.add("unoccupied");
+              document
+                .getElementById("space2-status")
+                .classList.remove("occupied");
+            }
+          } else {
+            throw new Error("Invalid data format received.");
+          }
+        } catch (error) {
+          console.error("Error processing WebSocket data:", error);
+          // Handle errors gracefully
+          document.getElementById("space1-status").innerHTML =
+            "Space 1: Error fetching data";
+          document.getElementById("space2-status").innerHTML =
+            "Space 2: Error fetching data";
+        }
+      };
+
+      // Handle WebSocket errors
+      socket.onerror = function (error) {
+        console.error("WebSocket Error: ", error);
+      };
+
+      // Handle WebSocket connection close
+      socket.onclose = function () {
+        console.log("WebSocket connection closed");
+        document.getElementById("space1-status").innerHTML =
+          "Space 1: WebSocket closed";
+        document.getElementById("space2-status").innerHTML =
+          "Space 2: WebSocket closed";
+      };
+    </script>
+  </body>
+</html>
